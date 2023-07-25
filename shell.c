@@ -33,7 +33,7 @@ char *read_input(void)
 		}
 	}
 
-	return input;
+	return (input);
 }
 
 /**
@@ -46,76 +46,86 @@ char *read_input(void)
 char **parse_input(char *input)
 {
 	int i = 0;
-        char *token;
-
 	char **args = (char **)malloc(MAX_ARGS * sizeof(char *));
+	char *start = input;
+
 	if (args == NULL)
 	{
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
 
-	token = strtok(input, DELIMITER);
-	while (token != NULL)
+	while (*input && i < MAX_ARGS - 1)
 	{
-		args[i++] = token;
-		token = strtok(NULL, DELIMITER);
-	}
-	args[i] = NULL;
+		while (isspace(*input))
+			input++;
 
-	return args;
-}
+		if (*input == '\0')
+			break;
 
-/**
- * execute_command - Executes the command specified by the user.
- *
- * @args: The arguments array containing the command and its arguments.
- */
-void execute_command(char **args)
-{
-	pid_t pid = fork();
-	if (pid < 0)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	else if (pid == 0)
-	{
-		/* Child process */
-		if (execvp(args[0], args) == -1)
+		while (*input && !isspace(*input))
+			input++;
+
+		if (*input)
+			*input++ = '\0';
+
+		args[i++] = strdup(start);
+
+		if (args[i - 1] == NULL)
 		{
-			perror("execvp");
+			perror("malloc");
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-		/* Parent process */
-		wait(NULL);
-	}
+	args[i] = NULL;
+
+	return (args);
 }
 
-int main(void)
+/**
+ * setenv_builtin - Set or modify an environment variable.
+ *
+ * @args: The arguments array containing the command and its arguments.
+ *
+ * Return: Always returns 0.
+ */
+int setenv_builtin(char **args)
 {
-	char *input;
-	char **args;
-
-	while (1)
+	if (args[1] == NULL || args[2] == NULL)
 	{
-		display_prompt();
-		input = read_input();
-		args = parse_input(input);
-
-		/* Check if the user entered any input */
-		if (args[0] != NULL)
-		{
-			execute_command(args);
-		}
-
-		/* Free allocated memory */
-		free(input);
-		free(args);
+		fprintf(stderr, "Usage: setenv VARIABLE VALUE\n");
+		return (0);
 	}
 
-	return 0;
+	if (setenv(args[1], args[2], 1) != 0)
+	{
+		perror("setenv");
+		return (0);
+	}
+
+	return (0);
+}
+
+/**
+ * unsetenv_builtin - Unset an environment variable.
+ *
+ * @args: The arguments array containing the command and its arguments.
+ *
+ * Return: Always returns 0.
+ */
+int unsetenv_builtin(char **args)
+{
+	if (args[1] == NULL)
+	{
+		fprintf(stderr, "Usage: unsetenv VARIABLE\n");
+		return (0);
+	}
+
+	if (unsetenv(args[1]) != 0)
+	{
+		perror("unsetenv");
+		return (0);
+	}
+
+	return (0);
 }
