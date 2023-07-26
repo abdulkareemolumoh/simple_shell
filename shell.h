@@ -29,6 +29,12 @@ bool exit_builtin(void);
 int execute_with_path(char *full_path, char **args);
 int setenv_builtin(char **args);
 int unsetenv_builtin(char **args);
+void handle_arguments(int argc, char **argv);
+void handle_command(char **args);
+void handle_builtins(char **args);
+void handle_cd_builtin(char **args);
+void handle_non_builtin_command(char **args);
+void handle_input_line(char *line);
 
 #endif /* MYSHELL_H */
 
