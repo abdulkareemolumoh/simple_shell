@@ -21,11 +21,9 @@ void execute_command(char **args)
 	else if (pid == 0)
 	{
 		/* Child process */
-		if (execvp(args[0], args) == -1)
-		{
-			perror("execvp");
-			exit(EXIT_FAILURE);
-		}
+		execvp(args[0], args);
+		perror("execvp");
+		exit(EXIT_FAILURE);
 	}
 	else
 	{
@@ -38,4 +36,3 @@ void execute_command(char **args)
 		}
 	}
 }
-
